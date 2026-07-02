@@ -14,22 +14,20 @@ Built from scratch by reverse-engineering the encrypted official mobile app and 
 ### Full Dashboard: Camera + LiDAR + Controls + Telemetry
 ![Full dashboard showing live camera feed, 3D LiDAR point cloud, posture and trick controls, drive controls, and live telemetry bar](screenshots/01_dashboard_full.png)
 
-### Dense LiDAR Point Cloud (106K points) with Go2 3D Model
-![Densest LiDAR scan with 106,941 points, Go2 3D model centered in the room scan, voice and audio controls visible](screenshots/05_lidar_dense.png)
-
 ### SLAM Mapping + Autonomous Patrol with LiDAR and Controls
-![SLAM patrol interface with LiDAR point cloud, waypoints on the 3D map, patrol controls, obstacle avoidance, and audio panel](screenshots/03_slam_patrol.png)
+![SLAM patrol interface with LiDAR point cloud, waypoints on the 3D map, patrol controls, obstacle avoidance, and audio panel](screenshots/02_slam_patrol.png)
 
 ### SLAM Mapping Workflow
-![SLAM panel showing the full mapping workflow with Start Map, End Map, Save Map buttons, localize in saved map, waypoint placement, and patrol steps](screenshots/04_slam_mapping.png)
+![SLAM panel showing the full mapping workflow with Start Map, End Map, Save Map buttons, localize in saved map, waypoint placement, and patrol steps](screenshots/03_slam_mapping.png)
+
+### Dense LiDAR Point Cloud (106K points) with Go2 3D Model
+![Densest LiDAR scan with 106,941 points, Go2 3D model centered in the room scan, voice and audio controls visible](screenshots/04_lidar_dense.png)
 
 ---
 
 ## Demo Video
 
-https://github.com/user-attachments/assets/Go2_Flips.mp4
-
-https://github.com/OneAbove411/go2_chrome_console/raw/main/Go2_Flips.mp4
+<video src="Go2_Flips.mp4" controls width="100%"></video>
 
 ---
 
