@@ -9,6 +9,14 @@ Built from scratch by reverse-engineering the encrypted official mobile app and 
 
 ---
 
+## Demo Video
+
+https://github.com/OneAbove411/go2_chrome_console/raw/main/Go2_Flips.mp4
+
+<video src="https://github.com/OneAbove411/go2_chrome_console/raw/main/Go2_Flips.mp4?v=2" controls="controls" style="max-width:100%;"></video>
+
+---
+
 ## Screenshots
 
 ### Full Dashboard: Camera + LiDAR + Controls + Telemetry
@@ -21,13 +29,7 @@ Built from scratch by reverse-engineering the encrypted official mobile app and 
 ![SLAM panel showing the full mapping workflow with Start Map, End Map, Save Map buttons, localize in saved map, waypoint placement, and patrol steps](screenshots/03_slam_mapping.png)
 
 ### Dense LiDAR Point Cloud and Control Panel Categories
-![Dense LiDAR 3D point cloud with Go2 model, showing detailed control categories like Gaits, AI Walks, and advanced maneuvers](screenshots/04_lidar_dense.png)
-
----
-
-## Demo Video
-
-<video src="Go2_Flips.mp4" controls width="100%"></video>
+![Dense LiDAR 3D point cloud with Go2 model, showing detailed control categories like Gaits, AI Walks, and advanced maneuvers](screenshots/04_lidar_dense.png?v=2)
 
 ---
 
