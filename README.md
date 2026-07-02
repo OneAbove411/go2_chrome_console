@@ -17,22 +17,19 @@ Built from scratch by reverse-engineering the encrypted official mobile app and 
 ### Dense LiDAR Point Cloud (106K points) with Go2 3D Model
 ![Densest LiDAR scan with 106,941 points, Go2 3D model centered in the room scan, voice and audio controls visible](screenshots/05_lidar_dense.png)
 
-### All Controls: Gaits, AI Walks, Flips, Advanced Maneuvers
-![Dense LiDAR 3D point cloud with the Go2 model visible, control panel showing gaits, AI walks, advanced maneuvers, and flips](screenshots/02_lidar_controls.png)
+### SLAM Mapping + Autonomous Patrol with LiDAR and Controls
+![SLAM patrol interface with LiDAR point cloud, waypoints on the 3D map, patrol controls, obstacle avoidance, and audio panel](screenshots/03_slam_patrol.png)
 
 ### SLAM Mapping Workflow
 ![SLAM panel showing the full mapping workflow with Start Map, End Map, Save Map buttons, localize in saved map, waypoint placement, and patrol steps](screenshots/04_slam_mapping.png)
-
-### Autonomous Patrol with Waypoints on 3D Map
-![SLAM patrol interface with waypoints placed on the 3D map, patrol Start Pause Stop controls, obstacle avoidance toggle, and audio panel](screenshots/03_slam_patrol.png)
 
 ---
 
 ## Demo Video
 
-Full demo (camera, driving, tricks, LiDAR, SLAM, patrol) is too large for GitHub.
+https://github.com/user-attachments/assets/Go2_Flips.mp4
 
-**Watch it here:** *[YouTube link coming soon]*
+https://github.com/OneAbove411/go2_chrome_console/raw/main/Go2_Flips.mp4
 
 ---
 
