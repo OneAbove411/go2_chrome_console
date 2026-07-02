@@ -4,14 +4,35 @@
 
 Built from scratch by reverse-engineering the encrypted official mobile app and reimplementing its entire control stack as a web application. No SDK, no same-LAN requirement, no Tailscale. Just open Chrome, connect to the robot from anywhere.
 
-> This repository is a project showcase. The full source code is maintained in a private repository.  
-> I'm happy to do a live demo or code walkthrough on request.
+> This repository is a project showcase. The full source code is maintained in a private repository.
+> I am happy to do a live demo or code walkthrough on request.
 
 ---
 
-## What it does
+## Screenshots
 
-A single-page web console that connects to a Unitree Go2 EDU over the cloud (WebRTC), streams its camera and audio live, drives it with keyboard controls, triggers its full trick and gait repertoire, decodes and renders its LiDAR point cloud in 3D, and runs the robot's own SLAM mapping with autonomous patrol. All of this was reverse-engineered from the encrypted phone app.
+### Full Dashboard: Camera + LiDAR + Controls + Telemetry
+![Full dashboard showing live camera feed, 3D LiDAR point cloud, posture and trick controls, drive controls, and live telemetry bar](screenshots/01_dashboard_full.png)
+
+### Dense LiDAR Point Cloud (106K points) with Go2 3D Model
+![Densest LiDAR scan with 106,941 points, Go2 3D model centered in the room scan, voice and audio controls visible](screenshots/05_lidar_dense.png)
+
+### All Controls: Gaits, AI Walks, Flips, Advanced Maneuvers
+![Dense LiDAR 3D point cloud with the Go2 model visible, control panel showing gaits, AI walks, advanced maneuvers, and flips](screenshots/02_lidar_controls.png)
+
+### SLAM Mapping Workflow
+![SLAM panel showing the full mapping workflow with Start Map, End Map, Save Map buttons, localize in saved map, waypoint placement, and patrol steps](screenshots/04_slam_mapping.png)
+
+### Autonomous Patrol with Waypoints on 3D Map
+![SLAM patrol interface with waypoints placed on the 3D map, patrol Start Pause Stop controls, obstacle avoidance toggle, and audio panel](screenshots/03_slam_patrol.png)
+
+---
+
+## Demo Video
+
+Full demo (camera, driving, tricks, LiDAR, SLAM, patrol) is too large for GitHub.
+
+**Watch it here:** *[YouTube link coming soon]*
 
 ---
 
@@ -25,46 +46,29 @@ The core technical challenge was getting a browser to control the robot remotely
 
 **The solution:** Let Chrome's built-in `libwebrtc` (the same battle-tested engine the phone app uses) be the WebRTC peer. Python handles only the cloud authentication and SDP envelope. The browser does the actual DTLS handshake, TURN relay, and media.
 
-No public project had done browser-over-cloud control of the Go2 before this. I verified this against every existing open-source Go2 WebRTC project.
+No public project had done browser-over-cloud control of the Go2 before this. Verified against every existing open-source Go2 WebRTC project.
 
-```mermaid
-flowchart LR
-    subgraph Browser["Chrome Tab"]
-        B1["WebRTC Engine\n(libwebrtc)"]
-        B2["SDP Offer\nDTLS / TURN / Media"]
-    end
+### Architecture
 
-    subgraph Bridge["Python Bridge"]
-        P1["Cloud Login\nTURN Credentials"]
-        P2["AES/RSA\nSDP Envelope"]
-    end
+```
+  YOUR BROWSER (Chrome)              Python Bridge                 Unitree Cloud              Go2 Robot
+  =====================             ==============                ==============            ===========
+  WebRTC engine (libwebrtc)         Cloud login                   Routes by serial          ROS 2 / DDS
+  Creates SDP offer                 Fetches TURN creds            TURN relay server         DTLS peer
+  Does DTLS + TURN + media          AES/RSA SDP envelope          webrtc/account+connect    Data channel
 
-    subgraph Cloud["Unitree Cloud"]
-        C1["Routes by\nSerial Number"]
-        C2["TURN Relay\nServer"]
-    end
 
-    subgraph Robot["Go2 Robot"]
-        R1["ROS 2 / DDS\nOnboard"]
-        R2["DTLS Peer\nData Channel"]
-    end
+  Step 1: Python logs in, fetches TURN credentials
+  Step 2: Browser creates RTCPeerConnection with TURN creds, generates SDP offer
+  Step 3: Python wraps offer in AES/RSA envelope, sends to cloud, returns robot's answer
+  Step 4: Browser completes DTLS handshake over TURN relay. Media + data channel are live.
 
-    B1 -- "SDP offer" --> P1
-    P2 -- "Encrypted SDP" --> C1
-    C1 -- "SDP relay" --> R1
-    R2 -- "SDP answer" --> C2
-    C2 -- "Robot answer" --> P2
-    P1 -- "SDP answer" --> B2
-
-    B2 <== "WebRTC Media + Data Channel\n(direct, via TURN relay)" ==> R2
-
-    style Browser fill:#1a1f35,stroke:#3b82f6,color:#e6edf3
-    style Bridge fill:#1a2e1a,stroke:#22c55e,color:#e6edf3
-    style Cloud fill:#2a1a2e,stroke:#a855f7,color:#e6edf3
-    style Robot fill:#2e2a1a,stroke:#f59e0b,color:#e6edf3
+  Browser  ---( SDP offer )-->  Python  ---( encrypted SDP )--->  Cloud  ---( relay )--->  Robot
+  Browser  <--( SDP answer )--  Python  <--( robot answer )-----  Cloud  <--------------   Robot
+  Browser  <===============  WebRTC media + data channel (direct, via TURN)  ============>  Robot
 ```
 
-### The exact fixes that unlocked it (in order)
+### The exact fixes that unlocked it
 
 1. **Cached the login token** so it doesn't re-authenticate per request (re-logging triggered Unitree's API rate limit, HTTP 567).
 2. **Chrome, not aiortc, creates the RTCPeerConnection + offer + handles DTLS.** This was the key architectural decision.
@@ -80,34 +84,20 @@ Once the WebRTC connection is up, there is one data channel named `"data"`. Ever
 
 The robot is effectively a ROS 2 robot with a WebRTC bridge in front of it. Once you hold that data channel, you have the same control surface the phone app has. The dog does not know or care whether the command came from the official app or this console.
 
-```mermaid
-flowchart TD
-    subgraph Console["Browser Console"]
-        CMD["Command\n(e.g. Dance, Move, Map)"]
-    end
+```
+  Console sends:
+  { "type": <channel-type>, "topic": <ros2-topic>, "data": <payload> }
 
-    subgraph DataChannel["WebRTC Data Channel"]
-        MSG["JSON Message\ntype + topic + data"]
-    end
+  Types:     "req" (command)  |  "msg" (publish)  |  "vid"/"aud" (media)  |  "validation"  |  "heartbeat"
 
-    subgraph Dog["Go2 Onboard ROS 2"]
-        SPORT["rt/api/sport/request\nMove, Tricks, Gaits, Flips"]
-        SLAM["rt/uslam/client_command\nMap, Localize, Navigate, Patrol"]
-        LIDAR["rt/utlidar/switch\nLiDAR On/Off"]
-        AUDIO["Audio Stream\nTwo-way Mic/Speaker"]
-        TELEM["rt/lf/lowstate\nBattery, Temps, Mode"]
-    end
+  Topics:    rt/api/sport/request          Motion, tricks, gaits, flips
+             rt/uslam/client_command       SLAM mapping, localization, navigation, patrol
+             rt/utlidar/switch             LiDAR on/off
+             rt/lf/lowstate                Telemetry (battery, temps, mode)
 
-    CMD --> MSG
-    MSG --> SPORT
-    MSG --> SLAM
-    MSG --> LIDAR
-    MSG --> AUDIO
-    TELEM --> MSG
-
-    style Console fill:#1a1f35,stroke:#3b82f6,color:#e6edf3
-    style DataChannel fill:#1a2e1a,stroke:#22c55e,color:#e6edf3
-    style Dog fill:#2e2a1a,stroke:#f59e0b,color:#e6edf3
+  The dog runs ROS 2 internally. The WebRTC data channel bridges JSON
+  straight onto those topics. There is no separate command store.
+  You publish to a topic, the onboard service acts on it immediately.
 ```
 
 ---
@@ -141,89 +131,48 @@ What I extracted:
 
 ---
 
-## Screenshots
-
-### Full Dashboard: Camera + LiDAR + Controls + Telemetry
-![Full dashboard showing live camera feed, 3D LiDAR point cloud, posture and trick controls, drive controls, and live telemetry bar](screenshots/01_dashboard_full.png)
-
-### Dense LiDAR Point Cloud with Full Control Panel
-![Dense LiDAR 3D point cloud with the Go2 model visible, control panel showing gaits, AI walks, advanced maneuvers, and flips](screenshots/02_lidar_controls.png)
-
-### SLAM Patrol Mode with Waypoints
-![SLAM patrol interface with waypoints placed on the 3D map, patrol Start/Pause/Stop controls, obstacle avoidance toggle, and audio panel](screenshots/03_slam_patrol.png)
-
-### SLAM Mapping Workflow
-![SLAM panel showing the full mapping workflow with Start Map, End Map, Save Map buttons, localize in saved map, waypoint placement, and patrol steps](screenshots/04_slam_mapping.png)
-
-### 106K Point LiDAR Scan with Voice Panel
-![Densest LiDAR scan with 106,941 points, Go2 3D model centered in the room scan, voice/audio controls and TTS panel visible](screenshots/05_lidar_dense.png)
-
----
-
-## Demo Video
-
-The full demo video (camera, driving, tricks, LiDAR, SLAM, patrol) is too large for GitHub.
-
-**Watch it here:** *[YouTube link coming soon]*
-
----
-
 ## Autonomy Architecture: Project ROSE
 
-Beyond remote control, I designed a six-layer autonomy architecture for an autonomous gallery docent use case. Each layer is an independent module, built and verified separately, coordinated by a top-level state machine.
+Beyond remote control, I designed a six-layer autonomy architecture for an autonomous gallery docent use case. Each layer is an independent module, built and verified separately.
 
-```mermaid
-block-beta
-    columns 1
+```
+  +-----------------------------------------------------------------------+
+  |  L6   ORCHESTRATOR (state machine)                                     |
+  |        PATROL --> GREET --> CONVERSE --> RETURN_BASE --> IDLE           |
+  +-----------------------------------------------------------------------+
+                |                                        |
+  +-----------------------------+      +----------------------------------+
+  |  L5   SELF-CARE SUPERVISOR  |      |  L4   VOICE AGENT (Gemini Live)  |
+  |  Battery + temp watchdog    |      |  Dog's mic = input               |
+  |  Forces return-to-base      |      |  Dog's speaker = output          |
+  |  HIGHEST PRIORITY           |      |  Per-gallery knowledge           |
+  +-----------------------------+      +----------------------------------+
+                |                                        |
+  +-----------------------------------------------------------------------+
+  |  L3   PERCEPTION + TRIGGERS                                            |
+  |        MediaPipe gesture recognition (trained model, not geometry)     |
+  |        Visitor-present detector triggers conversation                  |
+  +-----------------------------------------------------------------------+
+                |
+  +-----------------------------------------------------------------------+
+  |  L2   PATROL / NAVIGATION MANAGER                                      |
+  |        Ordered waypoint list, navigation goals, pause()/resume()      |
+  +-----------------------------------------------------------------------+
+                |
+  +-----------------------------------------------------------------------+
+  |  L1   MAP + WAYPOINTS (one-time setup)                                 |
+  |        Walk the space once with Unitree SLAM, define named locations   |
+  +-----------------------------------------------------------------------+
+                |
+  +-----------------------------------------------------------------------+
+  |  CONTROL BUS: signaling_bridge.py + WebRTC data channel               |
+  |  All layers talk to the robot through this. Already built and working. |
+  +-----------------------------------------------------------------------+
 
-    block:L6:1
-        columns 2
-        L6T["L6"] L6C["Orchestrator: PATROL > GREET > CONVERSE > RETURN_BASE > IDLE"]
-    end
-
-    block:L5L4:1
-        columns 2
-        block:left:1
-            L5T["L5"] L5C["Self-Care Supervisor\nBattery + temp watchdog\nForces return-to-base"]
-        end
-        block:right:1
-            L4T["L4"] L4C["Voice Agent\nGemini Live API\nPer-gallery knowledge"]
-        end
-    end
-
-    block:L3:1
-        columns 2
-        L3T["L3"] L3C["Perception: MediaPipe gesture recognition + visitor detection"]
-    end
-
-    block:L2:1
-        columns 2
-        L2T["L2"] L2C["Patrol Manager: waypoint list, navigation goals, pause/resume"]
-    end
-
-    block:L1:1
-        columns 2
-        L1T["L1"] L1C["Map + Waypoints: one-time SLAM walk, named locations"]
-    end
-
-    block:BUS:1
-        columns 1
-        BUSTEXT["Control Bus: signaling_bridge.py + WebRTC data channel (already built)"]
-    end
-
-    style L6 fill:#1f1215,stroke:#ef4444,color:#f87171
-    style L5L4 fill:#161b22,stroke:#30363d,color:#e6edf3
-    style left fill:#1f1a12,stroke:#f59e0b,color:#fbbf24
-    style right fill:#1a1225,stroke:#a855f7,color:#c084fc
-    style L3 fill:#121f15,stroke:#22c55e,color:#4ade80
-    style L2 fill:#12171f,stroke:#3b82f6,color:#60a5fa
-    style L1 fill:#16181d,stroke:#6b7280,color:#9ca3af
-    style BUS fill:#1a2332,stroke:#3b82f6,color:#58a6ff
+  Priority:  SELF-CARE  >  VISITOR INTERACTION  >  PATROL
 ```
 
-**Priority:** Self-Care > Visitor Interaction > Patrol
-
-The key architectural decision: let the robot navigate itself with Unitree's onboard SLAM. The orchestrator stays the high-level brain and never runs a real-time motion loop over the cloud. This keeps the entire system inside the latency envelope.
+The key architectural decision: let the robot navigate itself with Unitree's onboard SLAM. The orchestrator stays the high-level brain and never runs a real-time motion loop over the cloud.
 
 ---
 
@@ -245,7 +194,7 @@ The key architectural decision: let the robot navigate itself with Unitree's onb
 
 This project was built through a combination of hands-on reverse engineering and AI-assisted development with Claude. The reverse engineering (APK cracking, protocol mining, hardware debugging) was manual work. The software implementation was pair-programmed with Claude, where I directed the architecture and Claude helped write and iterate on the code.
 
-The hardest problems were not code problems. They were:
+The hardest problems were not code problems:
 - Figuring out that `aiortc` fundamentally cannot complete DTLS over a TURN relay, and that the solution was to let Chrome be the WebRTC engine
 - Cracking the app's AES-encrypted JS bundles to recover the undocumented command protocol
 - Diagnosing a coordinate-frame mismatch (raw lidar-odom vs saved-map frame) that caused every navigation goal to return NO_PATH
