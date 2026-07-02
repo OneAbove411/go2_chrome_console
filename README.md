@@ -20,8 +20,8 @@ Built from scratch by reverse-engineering the encrypted official mobile app and 
 ### SLAM Mapping Workflow
 ![SLAM panel showing the full mapping workflow with Start Map, End Map, Save Map buttons, localize in saved map, waypoint placement, and patrol steps](screenshots/03_slam_mapping.png)
 
-### Dense LiDAR Point Cloud (106K points) with Go2 3D Model
-![Densest LiDAR scan with 106,941 points, Go2 3D model centered in the room scan, voice and audio controls visible](screenshots/04_lidar_dense.png)
+### Dense LiDAR Point Cloud and Control Panel Categories
+![Dense LiDAR 3D point cloud with Go2 model, showing detailed control categories like Gaits, AI Walks, and advanced maneuvers](screenshots/04_lidar_dense.png)
 
 ---
 
