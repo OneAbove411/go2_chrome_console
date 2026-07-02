@@ -131,9 +131,9 @@ What I extracted:
 
 ---
 
-## Autonomy Architecture: Project ROSE
+## Planned: Autonomous Docent Mode
 
-Beyond remote control, I designed a six-layer autonomy architecture for an autonomous gallery docent use case. Each layer is an independent module, built and verified separately.
+Beyond remote control, I designed a six-layer architecture for fully autonomous operation. The idea: the robot patrols a space on its own, greets visitors with tricks, holds voice conversations about the area it is patrolling, and looks after itself (battery, temperature). Each layer is independent and testable on its own.
 
 ```
   +-----------------------------------------------------------------------+
@@ -143,9 +143,9 @@ Beyond remote control, I designed a six-layer autonomy architecture for an auton
                 |                                        |
   +-----------------------------+      +----------------------------------+
   |  L5   SELF-CARE SUPERVISOR  |      |  L4   VOICE AGENT (Gemini Live)  |
-  |  Battery + temp watchdog    |      |  Dog's mic = input               |
-  |  Forces return-to-base      |      |  Dog's speaker = output          |
-  |  HIGHEST PRIORITY           |      |  Per-gallery knowledge           |
+  |  Battery + temp watchdog    |      |  Robot mic = input               |
+  |  Forces return-to-base      |      |  Robot speaker = output          |
+  |  HIGHEST PRIORITY           |      |  Context-aware responses         |
   +-----------------------------+      +----------------------------------+
                 |                                        |
   +-----------------------------------------------------------------------+
@@ -171,8 +171,6 @@ Beyond remote control, I designed a six-layer autonomy architecture for an auton
 
   Priority:  SELF-CARE  >  VISITOR INTERACTION  >  PATROL
 ```
-
-The key architectural decision: let the robot navigate itself with Unitree's onboard SLAM. The orchestrator stays the high-level brain and never runs a real-time motion loop over the cloud.
 
 ---
 
@@ -215,8 +213,6 @@ These projects exist in the Go2 WebRTC space. None of them do browser-over-cloud
 
 ## License
 
-This repository contains documentation, screenshots, and architectural diagrams only. The source code is proprietary and maintained in a private repository.
-
-Documentation: [CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/)
+This repository contains documentation and screenshots only. The source code is proprietary and maintained in a private repository. You are free to read and reference this material, but you may not reproduce, modify, or use it commercially without permission.
 
 Copyright 2026. All rights reserved.

@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Go2 Architecture Diagrams</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #0d1117;
+    color: #e6edf3;
+    padding: 60px;
+    display: flex;
+    flex-direction: column;
+    gap: 80px;
+    align-items: center;
+  }
+
+  .diagram {
+    width: 1100px;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 16px;
+    padding: 48px;
+    position: relative;
+  }
+
+  .diagram h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #f0f6fc;
+    margin-bottom: 8px;
+    letter-spacing: -0.3px;
+  }
+
+  .diagram .subtitle {
+    font-size: 14px;
+    color: #8b949e;
+    margin-bottom: 40px;
+    line-height: 1.5;
+  }
+
+  /* Signaling Flow Diagram */
+  .flow {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    position: relative;
+  }
+
+  .flow-node {
+    width: 220px;
+    border-radius: 12px;
+    padding: 24px 20px;
+    text-align: center;
+    position: relative;
+    z-index: 2;
+  }
+
+  .flow-node .node-icon {
+    font-size: 28px;
+    margin-bottom: 12px;
+    display: block;
+  }
+
+  .flow-node .node-title {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .flow-node .node-detail {
+    font-size: 12px;
+    line-height: 1.5;
+    opacity: 0.8;
+  }
+
+  .node-browser {
+    background: linear-gradient(135deg, #1a1f35, #1e2640);
+    border: 1px solid #3b82f6;
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.15);
+  }
+  .node-browser .node-title { color: #60a5fa; }
+
+  .node-bridge {
+    background: linear-gradient(135deg, #1a2e1a, #1e3520);
+    border: 1px solid #22c55e;
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.15);
+  }
+  .node-bridge .node-title { color: #4ade80; }
+
+  .node-cloud {
+    background: linear-gradient(135deg, #2a1a2e, #35203a);
+    border: 1px solid #a855f7;
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.15);
+  }
+  .node-cloud .node-title { color: #c084fc; }
+
+  .node-robot {
+    background: linear-gradient(135deg, #2e2a1a, #3a3520);
+    border: 1px solid #f59e0b;
+    box-shadow: 0 0 20px rgba(245, 158, 11, 0.15);
+  }
+  .node-robot .node-title { color: #fbbf24; }
+
+  /* Arrows between nodes */
+  .flow-arrows {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+  }
+
+  .arrow-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 60px;
+    flex-shrink: 0;
+    align-self: center;
+  }
+
+  .arrow-line {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+
+  .arrow-line .arr {
+    color: #8b949e;
+    font-size: 16px;
+    font-weight: 300;
+  }
+
+  .arrow-label {
+    font-size: 10px;
+    color: #8b949e;
+    text-align: center;
+    line-height: 1.4;
+    max-width: 90px;
+  }
+
+  /* Connection labels between nodes */
+  .conn-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 90px;
+    flex-shrink: 0;
+    align-self: center;
+  }
+
+  .conn-arrow {
+    font-size: 11px;
+    color: #6e7681;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+  }
+
+  .conn-arrow .label {
+    font-size: 10px;
+    color: #8b949e;
+  }
+
+  .conn-arrow svg {
+    width: 40px;
+    height: 12px;
+  }
+
+  .conn-arrow svg line {
+    stroke: #6e7681;
+    stroke-width: 1.5;
+  }
+
+  .conn-arrow svg polygon {
+    fill: #6e7681;
+  }
+
+  /* Step labels */
+  .step-row {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 32px;
+    gap: 24px;
+  }
+
+  .step-item {
+    flex: 1;
+    background: #0d1117;
+    border: 1px solid #21262d;
+    border-radius: 8px;
+    padding: 16px;
+  }
+
+  .step-num {
+    font-size: 11px;
+    font-weight: 700;
+    color: #6e7681;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+
+  .step-text {
+    font-size: 13px;
+    color: #c9d1d9;
+    line-height: 1.5;
+  }
+
+  .step-text code {
+    background: #1a1f29;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    color: #f0883e;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+
+  /* Data channel protocol */
+  .protocol-box {
+    background: #0d1117;
+    border: 1px solid #21262d;
+    border-radius: 10px;
+    padding: 24px;
+    margin-top: 24px;
+  }
+
+  .proto-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 12px;
+    align-items: flex-start;
+  }
+
+  .proto-row:last-child { margin-bottom: 0; }
+
+  .proto-key {
+    min-width: 80px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #f0883e;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+
+  .proto-val {
+    font-size: 13px;
+    color: #c9d1d9;
+    line-height: 1.5;
+  }
+
+  .proto-val code {
+    background: #1a1f29;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    color: #7ee787;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+
+  /* WebRTC direct line */
+  .direct-line {
+    margin-top: 24px;
+    background: linear-gradient(90deg, rgba(59,130,246,0.08), rgba(245,158,11,0.08));
+    border: 1px dashed #3b82f6;
+    border-radius: 8px;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .direct-line .dl-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #60a5fa;
+  }
+
+  .direct-line .dl-desc {
+    font-size: 12px;
+    color: #8b949e;
+  }
+
+  .direct-line .dl-arrow {
+    color: #6e7681;
+    font-size: 13px;
+    letter-spacing: 2px;
+  }
+
+  /* Autonomy layers */
+  .layers-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .layer {
+    display: flex;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .layer-tag {
+    min-width: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 8px;
+    writing-mode: vertical-lr;
+    text-orientation: mixed;
+    letter-spacing: 1px;
+    padding: 8px 4px;
+  }
+
+  .layer-content {
+    flex: 1;
+    border-radius: 10px;
+    padding: 18px 20px;
+  }
+
+  .layer-content .lc-title {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .layer-content .lc-desc {
+    font-size: 12px;
+    line-height: 1.5;
+    opacity: 0.8;
+  }
+
+  .layer-content .lc-states {
+    margin-top: 6px;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 11px;
+    color: #8b949e;
+  }
+
+  .l6 .layer-tag { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+  .l6 .layer-content { background: linear-gradient(135deg, #1f1215, #251519); border: 1px solid rgba(239, 68, 68, 0.3); }
+  .l6 .lc-title { color: #f87171; }
+
+  .l5 .layer-tag { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+  .l5 .layer-content { background: linear-gradient(135deg, #1f1a12, #251f15); border: 1px solid rgba(245, 158, 11, 0.3); }
+  .l5 .lc-title { color: #fbbf24; }
+
+  .l4 .layer-tag { background: rgba(168, 85, 247, 0.15); color: #c084fc; }
+  .l4 .layer-content { background: linear-gradient(135deg, #1a1225, #201529); border: 1px solid rgba(168, 85, 247, 0.3); }
+  .l4 .lc-title { color: #c084fc; }
+
+  .l3 .layer-tag { background: rgba(34, 197, 94, 0.15); color: #4ade80; }
+  .l3 .layer-content { background: linear-gradient(135deg, #121f15, #152519); border: 1px solid rgba(34, 197, 94, 0.3); }
+  .l3 .lc-title { color: #4ade80; }
+
+  .l2 .layer-tag { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+  .l2 .layer-content { background: linear-gradient(135deg, #12171f, #151d25); border: 1px solid rgba(59, 130, 246, 0.3); }
+  .l2 .lc-title { color: #60a5fa; }
+
+  .l1 .layer-tag { background: rgba(107, 114, 128, 0.15); color: #9ca3af; }
+  .l1 .layer-content { background: linear-gradient(135deg, #16181d, #1a1d22); border: 1px solid rgba(107, 114, 128, 0.3); }
+  .l1 .lc-title { color: #9ca3af; }
+
+  .layer-split {
+    display: flex;
+    gap: 12px;
+    flex: 1;
+  }
+
+  .layer-split .layer-content {
+    flex: 1;
+  }
+
+  /* Priority label */
+  .priority-bar {
+    margin-top: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: #0d1117;
+    border: 1px solid #21262d;
+    border-radius: 8px;
+  }
+
+  .priority-bar .pb-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #6e7681;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .priority-bar .pb-chain {
+    font-size: 13px;
+    color: #c9d1d9;
+  }
+
+  .priority-bar .pb-chain .hi { color: #f87171; font-weight: 600; }
+  .priority-bar .pb-chain .mid { color: #fbbf24; font-weight: 600; }
+  .priority-bar .pb-chain .lo { color: #60a5fa; font-weight: 600; }
+
+  /* Control bus bar at bottom */
+  .control-bus {
+    margin-top: 16px;
+    background: linear-gradient(90deg, #161b22, #1a2332, #161b22);
+    border: 1px solid #30363d;
+    border-radius: 10px;
+    padding: 16px 20px;
+    text-align: center;
+  }
+
+  .control-bus .cb-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #58a6ff;
+    margin-bottom: 4px;
+  }
+
+  .control-bus .cb-desc {
+    font-size: 12px;
+    color: #6e7681;
+  }
+
+  /* Tech stack badges */
+  .tech-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 24px;
+    justify-content: center;
+  }
+
+  .tech-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 6px;
+    background: #21262d;
+    color: #c9d1d9;
+    border: 1px solid #30363d;
+  }
+
+  /* Separator */
+  hr.section-sep {
+    border: none;
+    border-top: 1px solid #21262d;
+    margin: 0;
+    width: 1100px;
+  }
+</style>
+</head>
+<body>
+
+<!-- DIAGRAM 1: Signaling Flow -->
+<div class="diagram" id="diagram-signaling">
+  <h2>System Architecture: Signaling Flow</h2>
+  <p class="subtitle">How a browser tab connects to a Unitree Go2 over the internet. The browser runs the WebRTC engine (same as the phone app). Python handles only the cloud authentication and SDP exchange.</p>
+
+  <div class="flow">
+    <div class="flow-node node-browser">
+      <span class="node-icon">&#x1f310;</span>
+      <div class="node-title">Chrome Tab</div>
+      <div class="node-detail">WebRTC engine (libwebrtc)<br>Creates SDP offer<br>DTLS + TURN + media</div>
+    </div>
+
+    <div class="conn-group">
+      <div class="conn-arrow">
+        <span class="label">SDP offer</span>
+        <span>&rarr;</span>
+      </div>
+      <div class="conn-arrow">
+        <span>&larr;</span>
+        <span class="label">SDP answer</span>
+      </div>
+    </div>
+
+    <div class="flow-node node-bridge">
+      <span class="node-icon">&#x1f517;</span>
+      <div class="node-title">Python Bridge</div>
+      <div class="node-detail">signaling_bridge.py<br>Login + TURN creds<br>AES/RSA envelope</div>
+    </div>
+
+    <div class="conn-group">
+      <div class="conn-arrow">
+        <span class="label">Encrypted SDP</span>
+        <span>&rarr;</span>
+      </div>
+      <div class="conn-arrow">
+        <span>&larr;</span>
+        <span class="label">Robot answer</span>
+      </div>
+    </div>
+
+    <div class="flow-node node-cloud">
+      <span class="node-icon">&#x2601;</span>
+      <div class="node-title">Unitree Cloud</div>
+      <div class="node-detail">Routes by serial number<br>TURN relay server<br>webrtc/account + connect</div>
+    </div>
+
+    <div class="conn-group">
+      <div class="conn-arrow">
+        <span class="label">SDP relay</span>
+        <span>&rarr;</span>
+      </div>
+      <div class="conn-arrow">
+        <span>&larr;</span>
+        <span class="label">SDP answer</span>
+      </div>
+    </div>
+
+    <div class="flow-node node-robot">
+      <span class="node-icon">&#x1f415;</span>
+      <div class="node-title">Go2 Robot</div>
+      <div class="node-detail">ROS 2 / DDS onboard<br>DTLS peer<br>Data channel + media</div>
+    </div>
+  </div>
+
+  <div class="direct-line">
+    <div>
+      <div class="dl-label">WebRTC Media + Data Channel (direct, via TURN relay)</div>
+      <div class="dl-desc">Video, audio, commands, telemetry, LiDAR. Same path the phone app uses.</div>
+    </div>
+    <div class="dl-arrow">Browser &lt;===========================&gt; Robot</div>
+  </div>
+
+  <div class="step-row">
+    <div class="step-item">
+      <div class="step-num">Step 1</div>
+      <div class="step-text">Python logs into Unitree cloud, fetches TURN credentials via <code>/webrtc/account</code></div>
+    </div>
+    <div class="step-item">
+      <div class="step-num">Step 2</div>
+      <div class="step-text">Browser creates RTCPeerConnection with TURN creds, generates SDP offer</div>
+    </div>
+    <div class="step-item">
+      <div class="step-num">Step 3</div>
+      <div class="step-text">Python wraps offer in AES/RSA envelope, sends via <code>/webrtc/connect</code>, returns robot's answer</div>
+    </div>
+    <div class="step-item">
+      <div class="step-num">Step 4</div>
+      <div class="step-text">Browser completes DTLS handshake over TURN relay. Media + data channel are live.</div>
+    </div>
+  </div>
+</div>
+
+<!-- DIAGRAM 2: Data Channel Protocol -->
+<div class="diagram" id="diagram-protocol">
+  <h2>Data Channel Protocol</h2>
+  <p class="subtitle">Once connected, a single WebRTC data channel named "data" carries everything. Every message is JSON published directly to the robot's internal ROS 2 topics.</p>
+
+  <div class="protocol-box">
+    <div class="proto-row">
+      <div class="proto-key">format</div>
+      <div class="proto-val"><code>{ "type": &lt;channel-type&gt;, "topic": &lt;ros2-topic&gt;, "data": &lt;payload&gt; }</code></div>
+    </div>
+    <div class="proto-row">
+      <div class="proto-key">type</div>
+      <div class="proto-val"><code>"req"</code> command request &middot; <code>"msg"</code> plain publish &middot; <code>"vid"</code> / <code>"aud"</code> media toggles &middot; <code>"validation"</code> handshake &middot; <code>"heartbeat"</code></div>
+    </div>
+    <div class="proto-row">
+      <div class="proto-key">topic</div>
+      <div class="proto-val">A ROS 2 topic on the robot, e.g. <code>rt/api/sport/request</code> for motion, <code>rt/utlidar/switch</code> for LiDAR, <code>rt/uslam/client_command</code> for SLAM</div>
+    </div>
+    <div class="proto-row">
+      <div class="proto-key">data</div>
+      <div class="proto-val">Request envelope with <code>header.identity.api_id</code> selecting the action and <code>parameter</code> carrying arguments. The robot acts on it immediately.</div>
+    </div>
+  </div>
+
+  <div class="step-row">
+    <div class="step-item">
+      <div class="step-num">Validation</div>
+      <div class="step-text">Robot sends a challenge string. Client replies with <code>base64(md5("UnitreeGo2_" + challenge))</code>. Then publish <code>"on"</code> to start media streams.</div>
+    </div>
+    <div class="step-item">
+      <div class="step-num">Commands</div>
+      <div class="step-text">Sport (move, tricks, flips, gaits), SLAM (map, localize, navigate, patrol), audio, LiDAR, obstacle avoidance. All through api_id enums on topics.</div>
+    </div>
+    <div class="step-item">
+      <div class="step-num">Key Insight</div>
+      <div class="step-text">The dog is a ROS 2 robot with a WebRTC bridge. Hold the data channel, and you have the same control surface the phone app has.</div>
+    </div>
+  </div>
+</div>
+
+<!-- DIAGRAM 3: Autonomy Architecture (Project ROSE) -->
+<div class="diagram" id="diagram-autonomy">
+  <h2>Autonomy Architecture: Project ROSE</h2>
+  <p class="subtitle">Six-layer architecture for an autonomous gallery docent. Each layer is an independent module built and tested separately. The orchestrator ties them together.</p>
+
+  <div class="layers-stack">
+    <div class="layer l6">
+      <div class="layer-tag">L6</div>
+      <div class="layer-content">
+        <div class="lc-title">Orchestrator (the "mind")</div>
+        <div class="lc-desc">Explicit state machine. Owns all transitions. L2 through L5 are subordinate services it coordinates.</div>
+        <div class="lc-states">PATROL &rarr; GREET &rarr; CONVERSE &rarr; RETURN_BASE &rarr; IDLE</div>
+      </div>
+    </div>
+
+    <div class="layer">
+      <div class="layer-split">
+        <div class="layer l5" style="display:flex;gap:12px;flex:1;">
+          <div class="layer-tag">L5</div>
+          <div class="layer-content">
+            <div class="lc-title">Self-Care Supervisor</div>
+            <div class="lc-desc">Watchdog on battery SOC, motor temps, BMS/IMU temps. Forces return-to-base and signals a human. Highest priority.</div>
+          </div>
+        </div>
+        <div class="layer l4" style="display:flex;gap:12px;flex:1;">
+          <div class="layer-tag">L4</div>
+          <div class="layer-content">
+            <div class="lc-title">Conversation (Voice Agent)</div>
+            <div class="lc-desc">Gemini Live API, headless voice. Dog's mic is input, speaker is output. Per-gallery knowledge injected by current waypoint.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="layer l3">
+      <div class="layer-tag">L3</div>
+      <div class="layer-content">
+        <div class="lc-title">Perception and Triggers</div>
+        <div class="lc-desc">MediaPipe Gesture Recognizer (trained model, not geometry rules) with confidence floor + temporal stability gate. Visitor-present detector triggers conversation.</div>
+      </div>
+    </div>
+
+    <div class="layer l2">
+      <div class="layer-tag">L2</div>
+      <div class="layer-content">
+        <div class="lc-title">Patrol / Navigation Manager</div>
+        <div class="lc-desc">Holds ordered waypoint list. Issues navigation goals to the robot's onboard SLAM. Exposes pause() and resume() for interrupts from L3/L5/L6.</div>
+      </div>
+    </div>
+
+    <div class="layer l1">
+      <div class="layer-tag">L1</div>
+      <div class="layer-content">
+        <div class="lc-title">Map and Waypoints (one-time setup)</div>
+        <div class="lc-desc">Walk the space once with Unitree's built-in SLAM. Define named waypoints (galleries, base). Output is a config artifact, not runtime code.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="priority-bar">
+    <div class="pb-label">Priority</div>
+    <div class="pb-chain"><span class="hi">Self-Care</span> &gt; <span class="mid">Visitor Interaction</span> &gt; <span class="lo">Patrol</span></div>
+  </div>
+
+  <div class="control-bus">
+    <div class="cb-title">Control Bus (existing infrastructure)</div>
+    <div class="cb-desc">signaling_bridge.py + WebRTC data channel. All layers talk to the robot through this. Already built and working.</div>
+  </div>
+</div>
+
+<!-- DIAGRAM 4: Tech Stack -->
+<div class="diagram" id="diagram-stack">
+  <h2>Tech Stack</h2>
+  <p class="subtitle">Everything used to build this project, from the signaling server to the LiDAR decoder.</p>
+
+  <div style="display: flex; gap: 24px; flex-wrap: wrap;">
+    <div class="step-item" style="flex:1; min-width: 200px;">
+      <div class="step-num">Backend</div>
+      <div class="step-text">Python, aiohttp (async HTTP server), Unitree cloud crypto (AES-CBC + RSA)</div>
+    </div>
+    <div class="step-item" style="flex:1; min-width: 200px;">
+      <div class="step-num">Frontend</div>
+      <div class="step-text">Single-page HTML/JS, Three.js (3D LiDAR renderer), WebAudio API (two-way audio)</div>
+    </div>
+    <div class="step-item" style="flex:1; min-width: 200px;">
+      <div class="step-num">Networking</div>
+      <div class="step-text">WebRTC (Chrome's libwebrtc), DTLS/TURN, ICE, data channels</div>
+    </div>
+    <div class="step-item" style="flex:1; min-width: 200px;">
+      <div class="step-num">Robotics</div>
+      <div class="step-text">ROS 2 / DDS topics over WebRTC, SLAM (Unitree onboard), sport/gait API, LiDAR voxel decode</div>
+    </div>
+    <div class="step-item" style="flex:1; min-width: 200px;">
+      <div class="step-num">Reverse Engineering</div>
+      <div class="step-text">APK decompilation, AES asset decryption, protocol mining from obfuscated JS and DEX bytecode</div>
+    </div>
+    <div class="step-item" style="flex:1; min-width: 200px;">
+      <div class="step-num">Perception</div>
+      <div class="step-text">MediaPipe hand/gesture detection, LZ4 decompression (WASM), voxel-to-point-cloud decoder</div>
+    </div>
+  </div>
+
+  <div class="tech-row">
+    <span class="tech-badge">Python</span>
+    <span class="tech-badge">JavaScript</span>
+    <span class="tech-badge">WebRTC</span>
+    <span class="tech-badge">Three.js</span>
+    <span class="tech-badge">WebAudio</span>
+    <span class="tech-badge">WASM / LZ4</span>
+    <span class="tech-badge">MediaPipe</span>
+    <span class="tech-badge">ROS 2 / DDS</span>
+    <span class="tech-badge">AES / RSA</span>
+    <span class="tech-badge">Gemini Live API</span>
+    <span class="tech-badge">aiohttp</span>
+    <span class="tech-badge">SLAM</span>
+  </div>
+</div>
+
+</body>
+</html>
